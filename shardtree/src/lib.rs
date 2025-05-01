@@ -32,6 +32,12 @@ use tracing::{ trace, warn };
 #[cfg(target_os = "android")]
 use android_logger::Config;
 
+#[macro_use] extern crate log;
+extern crate android_logger;
+
+use log::LevelFilter;
+use android_logger::{Config,FilterBuilder};
+
 use incrementalmerkletree::{
     frontier::NonEmptyFrontier, Address, Hashable, Level, MerklePath, Position, Retention,
 };
@@ -1204,6 +1210,11 @@ impl<
         position: Position,
         checkpoint_id: &C,
     ) -> Result<MerklePath<H, DEPTH>, ShardTreeError<S::Error>> {
+        #[cfg(target_os = "android")]
+        android_logger::init_once(
+            Config::default().with_max_level(LevelFilter::Trace),
+        );
+
         warn!(">>> witness_at_checkpoint_id called!");
         let as_of = self
             .store
@@ -1225,6 +1236,11 @@ impl<
         position: Position,
         checkpoint_id: &C,
     ) -> Result<MerklePath<H, DEPTH>, ShardTreeError<S::Error>> {
+        #[cfg(target_os = "android")]
+        android_logger::init_once(
+            Config::default().with_max_level(LevelFilter::Trace),
+        );
+
         warn!(">>> witness_at_checkpoint_id_caching called!");
         let as_of = self
             .store
