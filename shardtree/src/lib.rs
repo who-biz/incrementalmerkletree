@@ -879,12 +879,15 @@ impl<
         address: Address,
         truncate_at: Position,
     ) -> Result<H, ShardTreeError<S::Error>> {
+        warn!(">>> bp1, root_from_shards");
         match address.context(Self::subtree_level()) {
             Either::Left(subtree_addr) => {
                 // The requested root address is fully contained within one of the subtrees.
                 Ok(if truncate_at <= address.position_range_start() {
+                    warn!(">>> bp1a, root_from_shards");
                     H::empty_root(address.level())
                 } else {
+                    warn!(">>> bp1b, root_from_shards");
                     // get the child of the subtree with its root at `address`
                     self.store
                         .get_shard(subtree_addr)
@@ -900,6 +903,7 @@ impl<
                 })
             }
             Either::Right(subtree_range) => {
+                warn!(">>> bp1c root_from_shards");
                 // The requested root requires hashing together the roots of several subtrees.
                 let mut root_stack = vec![];
                 let mut incomplete = vec![];
@@ -944,6 +948,7 @@ impl<
                 }
 
                 if !incomplete.is_empty() {
+                    warn!(">>> bp1d error in incrementalshardtree");
                     return Err(ShardTreeError::Query(QueryError::TreeIncomplete(
                         incomplete,
                     )));
@@ -1087,6 +1092,7 @@ impl<
     ) -> Result<MerklePath<H, DEPTH>, ShardTreeError<S::Error>> {
         let subtree_addr = Self::subtree_addr(position);
 
+        warn!(">>> bp1, witness_helper");
         // compute the witness for the specified position up to the subtree root
         let mut witness = get_shard(&ctx, subtree_addr)
             .map_err(ShardTreeError::Storage)?
@@ -1103,6 +1109,7 @@ impl<
             cur_addr = cur_addr.parent();
         }
 
+        warn!(">>> bp2, witness_helper");
         Ok(MerklePath::from_parts(witness, position).unwrap())
     }
 
@@ -1145,6 +1152,8 @@ impl<
         position: Position,
         checkpoint_depth: usize,
     ) -> Result<MerklePath<H, DEPTH>, ShardTreeError<S::Error>> {
+
+        warn!(">>> witness_at_checkpoint_depth called!");
         let as_of = self.max_leaf_position(checkpoint_depth).and_then(|v| {
             v.ok_or_else(|| QueryError::TreeIncomplete(vec![Self::root_addr()]).into())
         })?;
@@ -1170,6 +1179,8 @@ impl<
         position: Position,
         checkpoint_depth: usize,
     ) -> Result<MerklePath<H, DEPTH>, ShardTreeError<S::Error>> {
+        warn!(">>> witness_at_checkpoint_depth_caching called!");
+
         let as_of = self.max_leaf_position(checkpoint_depth).and_then(|v| {
             v.ok_or_else(|| QueryError::TreeIncomplete(vec![Self::root_addr()]).into())
         })?;
@@ -1190,6 +1201,7 @@ impl<
         position: Position,
         checkpoint_id: &C,
     ) -> Result<MerklePath<H, DEPTH>, ShardTreeError<S::Error>> {
+        warn!(">>> witness_at_checkpoint_id called!");
         let as_of = self
             .store
             .get_checkpoint(checkpoint_id)
@@ -1210,6 +1222,7 @@ impl<
         position: Position,
         checkpoint_id: &C,
     ) -> Result<MerklePath<H, DEPTH>, ShardTreeError<S::Error>> {
+        warn!(">>> witness_at_checkpoint_id_caching called!");
         let as_of = self
             .store
             .get_checkpoint(checkpoint_id)
