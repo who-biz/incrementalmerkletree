@@ -27,7 +27,10 @@ use either::Either;
 use incrementalmerkletree::frontier::Frontier;
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
-use tracing::trace;
+use tracing::{ trace, warn };
+
+#[cfg(target_os = "android")]
+use android_logger::Config;
 
 use incrementalmerkletree::{
     frontier::NonEmptyFrontier, Address, Hashable, Level, MerklePath, Position, Retention,
